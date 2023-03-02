@@ -15,7 +15,6 @@ export default function LikedFormSubmissionProvider({ children }) {
     saveLikedFormSubmission,
     { fetchOnInit: false, onSuccess: getLikedFormSubmissions }
   );
-  // should load liked form submissions automatically using useFetchWithRetry hook and then provide the ability to reload them from the provider
 
   const value = {
     likedFormSubmissions: data?.formSubmissions,
