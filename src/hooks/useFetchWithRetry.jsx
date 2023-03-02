@@ -1,38 +1,39 @@
 import { useEffect } from "react";
 import { useState } from "react";
 
-export default function useFetchWithRetry(
-  fetch,
-  options = {
-    retries: 3,
-    retryDelay: 1000,
-    incrmeentingDelay: true,
-    onSuccess: () => {},
-    onFailure: () => {},
-    fetchOnInit: true,
-  }
-) {
+const defaultOptions = {
+  retries: 3,
+  retryDelay: 1000,
+  incrmeentingDelay: true,
+  onSuccess: () => {},
+  onFailure: () => {},
+  fetchOnInit: true,
+};
+
+export default function useFetchWithRetry(fetch, options = defaultOptions) {
+  const fetchOptions = { ...defaultOptions, ...options };
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // add retry logic
   const fetchData = async () => {
     try {
       setLoading(true);
       const response = await fetch();
       setData(response);
-      options.onSuccess(response);
+      fetchOptions.onSuccess(response);
     } catch (error) {
       setError(error);
-      options.onFailure(error);
+      fetchOptions.onFailure(error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (options.fetchOnInit) fetchData();
-  }, [fetch, options.fetchOnInit]);
+    if (fetchOptions.fetchOnInit) fetchData();
+  }, []);
 
-  return { data, loading, error };
+  return { data, loading, error, fetchData };
 }
