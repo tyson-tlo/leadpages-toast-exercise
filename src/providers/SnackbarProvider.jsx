@@ -1,33 +1,35 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import Snackbar from "@mui/material/Snackbar";
-import { onMessage } from "../service/mockServer";
+import { Snackbar } from "@mui/material";
+import React, { createContext, useContext, useState } from "react";
 
-const SnackbarContext = createContext();
+export const SnackbarContext = createContext();
 
 export const SnackbarProvider = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const [action, setAction] = useState(null);
 
-  useEffect(() => {
-    onMessage((message) => {
-      console.log(message);
-      return handleOpen(message.data.email);
-    });
-  }, []);
-
-  const handleOpen = (message) => {
+  const handleOpen = (message, action = null) => {
     setMessage(message);
+    setAction(action);
     setIsOpen(true);
   };
 
   const handleClose = () => {
     setIsOpen(false);
+    if (action) {
+      action();
+    }
   };
 
   return (
     <SnackbarContext.Provider value={{ handleOpen }}>
       {children}
-      <Snackbar open={isOpen} onClose={handleClose} message={message} />
+      <Snackbar
+        open={isOpen}
+        onClose={handleClose}
+        message={message}
+        action={action ? "OK" : null}
+      />
     </SnackbarContext.Provider>
   );
 };

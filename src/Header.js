@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import Box from "@mui/material/Box";
 import AppBar from "@mui/material/AppBar";
@@ -8,9 +8,45 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 
-import { createMockFormSubmission } from "./service/mockServer";
+import {
+  createMockFormSubmission,
+  onMessage,
+  saveLikedFormSubmission,
+} from "./service/mockServer";
+import { useSnackbarContext } from "./providers/SnackbarProvider";
+import FormSubmissionInfo from "./components/FormSubmissionInfo/FormSubmissionInfo";
+import useRetry from "./hooks/useRetry";
 
 export default function Header() {
+  const { handleOpen } = useSnackbarContext();
+  const retry = useRetry();
+
+  const storeLikedFormSubmission = (formSubmission) => {
+    return async () => {
+      try {
+        await retry(
+          saveLikedFormSubmission({
+            ...formSubmission,
+            data: { ...formSubmission.data, liked: true },
+          })
+        );
+      } catch (error) {
+        alert(
+          "Unable to like form submission as there is an issue on our servers"
+        );
+      }
+    };
+  };
+
+  useEffect(() => {
+    onMessage((formSubmission) => {
+      return handleOpen(
+        <FormSubmissionInfo formSubmission={formSubmission} />,
+        storeLikedFormSubmission(formSubmission)
+      );
+    });
+  }, []);
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
